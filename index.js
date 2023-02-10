@@ -48,7 +48,7 @@ function parseAFML(filePath, options = { allowSecret: false }) {
       }
     } else {
       if (dataType === AFMLDataType.String) {
-        let matchString = value.match(/^"(.*)"$/);
+        let matchString = value.match(/^"(.*)"$/ | /^'(.*)'$/);
         if (matchString) {
           value = matchString[1];
         } else {
