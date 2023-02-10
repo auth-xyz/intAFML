@@ -5,7 +5,7 @@
   "devDependencies": {
     "@types/node": "^18.13.0"
   },
-  "name": "dotafml",
+  "name": "afml",
   "version": "1.0.0",
   "description": "intAFML TypeScript interpreter for AFML (Another Fucking Markup Language) is a powerful tool that allows you to add type information to your configuration files. With the ability to specify types such as String, Number, Boolean, and Secret, you can ensure that your configuration files are more secure and easier to maintain. When a string is given the Secret type, its output will be hidden, providing an extra layer of security for sensitive information in your configuration files. With TypeScript as the underlying language, the interpreter provides strong typing and error-checking, making it easier to catch mistakes before they cause problems in your application.",
   "main": "index.ts",
@@ -13,5 +13,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "auth-xyz < contact.me.auth@gmail.com / Auth#5245 >",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auth-xyz/intafml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/auth-xyz/intafml/issues"
+  },
+  "homepage": "https://github.com/auth-xyz/intafml#readme"
 }
