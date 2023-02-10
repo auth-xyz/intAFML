@@ -1,18 +1,14 @@
-import fs from 'fs';
+const fs = require('fs');
 
-interface Config {
-  [key: string]: any;
-}
+const AFMLDataType = {
+  String: 'String',
+  Boolean: 'Boolean',
+  Number: 'Number',
+  Secret: 'Secret',
+};
 
-enum AFMLDataType {
-  String = 'String',
-  Boolean = 'Boolean',
-  Number = 'Number',
-  Secret = 'Secret',
-}
-
-function parseAFML(filePath: string, options: { allowSecret: boolean } = { allowSecret: false }): Config {
-  let config: Config = {};
+function parseAFML(filePath, options = { allowSecret: false }) {
+  let config = {};
   let lines = fs.readFileSync(filePath, 'utf-8').split('\n');
 
   let currentSection = '';
@@ -37,13 +33,13 @@ function parseAFML(filePath: string, options: { allowSecret: boolean } = { allow
       throw new Error(`Line '${line}' does not contain a value`);
     }
 
-    if (!AFMLDataType[dataType as keyof typeof AFMLDataType]) {
+    if (!AFMLDataType[dataType]) {
       throw new Error(`Line '${line}' contains an invalid data type: ${dataType}`);
     }
 
     let valueAndKey = valueWithType.split(':');
     let key = valueAndKey[0].trim();
-    let value: any = valueAndKey[1].trim();
+    let value = valueAndKey[1].trim();
 
     if (dataType === AFMLDataType.Secret) {
       if (!options.allowSecret) {
@@ -79,6 +75,6 @@ function parseAFML(filePath: string, options: { allowSecret: boolean } = { allow
   return config;
 }
 
-export { 
+module.exports = {
   parseAFML
-}
+};
