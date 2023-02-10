@@ -33,7 +33,7 @@ console.log(config);
 
 - `config.afml`
 
-```toml
+```yaml
 [login]
 username: "Auth" ; String
 password: "1234" ; Secret
@@ -46,7 +46,7 @@ Parsing this file with allowSecret set to false (the default value) would result
 
 
 ```json
-login: { "username": "Auth", "password": "*****", "age": 19, "cool": true }
+"login": { "username": "Auth", "password": "*****", "age": 19, "cool": true }
 
 ```
 
@@ -54,7 +54,7 @@ Setting allowSecret to true would reveal the secret value:
 
 
 ```json
-login: { "username": "Auth", "password": "1234" "age": 19, "cool": true }
+"login": { "username": "Auth", "password": "1234" "age": 19, "cool": true }
 ```
 
 #### Contributing
