@@ -14,6 +14,7 @@
   },
   "author": "auth-xyz < contact.me.auth@gmail.com / Auth#5245 >",
   "license": "MIT",
+  "module": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/auth-xyz/intafml.git"
