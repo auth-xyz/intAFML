@@ -31,9 +31,9 @@ console.log(config);
 
 - Consider the following example AFML configuration file:
 
-- `config.afml`
-
 ```yaml
+# config.afml
+
 [login]
 username: "Auth" ; String
 password: "1234" ; Secret
