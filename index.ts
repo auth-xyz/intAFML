@@ -1,14 +1,18 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const AFMLDataType = {
-  String: 'String',
-  Boolean: 'Boolean',
-  Number: 'Number',
-  Secret: 'Secret',
-};
+interface Config {
+  [key: string]: any;
+}
 
-function parseAFML(filePath, options = { allowSecret: false }) {
-  let config = {};
+enum AFMLDataType {
+  String = 'String',
+  Boolean = 'Boolean',
+  Number = 'Number',
+  Secret = 'Secret',
+}
+
+function parseAFML(filePath: string, options: { allowSecret: boolean } = { allowSecret: false }): Config {
+  let config: Config = {};
   let lines = fs.readFileSync(filePath, 'utf-8').split('\n');
 
   let currentSection = '';
@@ -33,13 +37,13 @@ function parseAFML(filePath, options = { allowSecret: false }) {
       throw new Error(`Line '${line}' does not contain a value`);
     }
 
-    if (!AFMLDataType[dataType]) {
+    if (!AFMLDataType[dataType as keyof typeof AFMLDataType]) {
       throw new Error(`Line '${line}' contains an invalid data type: ${dataType}`);
     }
 
     let valueAndKey = valueWithType.split(':');
     let key = valueAndKey[0].trim();
-    let value = valueAndKey[1].trim();
+    let value: any = valueAndKey[1].trim();
 
     if (dataType === AFMLDataType.Secret) {
       if (!options.allowSecret) {
@@ -48,7 +52,7 @@ function parseAFML(filePath, options = { allowSecret: false }) {
       }
     } else {
       if (dataType === AFMLDataType.String) {
-        let matchString = value.match(/^"(.*)"$/ | /^'(.*)'$/);
+        let matchString = value.match(/^"(.*)"$/);
         if (matchString) {
           value = matchString[1];
         } else {
@@ -75,6 +79,6 @@ function parseAFML(filePath, options = { allowSecret: false }) {
   return config;
 }
 
-module.exports = {
+export { 
   parseAFML
-};
+}
