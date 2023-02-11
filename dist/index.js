@@ -3,76 +3,98 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseAFML = void 0;
+// Import necessary modules
 const fs_1 = __importDefault(require("fs"));
-var AFMLDataType;
-(function (AFMLDataType) {
-    AFMLDataType["String"] = "String";
-    AFMLDataType["Boolean"] = "Boolean";
-    AFMLDataType["Number"] = "Number";
-    AFMLDataType["Secret"] = "Secret";
-})(AFMLDataType || (AFMLDataType = {}));
-function parseAFML(filePath, options = { allowSecret: false }) {
-    let config = {};
-    let lines = fs_1.default.readFileSync(filePath, 'utf-8').split('\n');
-    let currentSection = '';
-    lines.forEach(line => {
-        line = line.trim();
-        if (line.startsWith('#') || line === '')
-            return;
-        let matchSection = line.match(/^\[(.*)\]$/);
-        if (matchSection) {
-            currentSection = matchSection[1];
-            config[currentSection] = {};
-            return;
+// Define the supported types in AFML
+var AFMLTypes;
+(function (AFMLTypes) {
+    AFMLTypes["String"] = "String";
+    AFMLTypes["Secret"] = "Secret";
+    AFMLTypes["Number"] = "Number";
+    AFMLTypes["Boolean"] = "Boolean";
+    AFMLTypes["JSON"] = "JSON";
+    AFMLTypes["Array"] = "Array";
+})(AFMLTypes || (AFMLTypes = {}));
+const parseValues = (value, type, allowSecret = true) => {
+    switch (type) {
+        case AFMLTypes.String:
+            return value;
+        case AFMLTypes.Secret:
+            return allowSecret ? value : "*".repeat(value.length);
+        case AFMLTypes.Number:
+            return parseFloat(value);
+        case AFMLTypes.Boolean:
+            return value === "true";
+        case AFMLTypes.JSON:
+            return JSON.parse(value);
+        case AFMLTypes.Array:
+            return value.split(",").map((item) => item.trim());
+        default:
+            throw new Error(`[AFML] :: Unsupported type annotation: ${type}`);
+    }
+};
+const parseAFML = (filePath, options = { allowSecret: false }) => {
+    // Read the content of the file
+    const fileContent = fs_1.default.readFileSync(filePath, "utf-8");
+    // Split the content by line
+    const lines = fileContent.split("\n");
+    // Keep track of the current section and its size limit
+    let currentSection = null;
+    let currentSectionSizeLimit = null;
+    // Store the variables and their values
+    const variables = {};
+    // Parse each line
+    for (const line of lines) {
+        // Trim the line and remove any comments
+        const trimmedLine = line.trim().split("#")[0];
+        // Skip empty lines
+        if (!trimmedLine) {
+            continue;
         }
-        let parts = line.split(/\s*;\s*/);
-        let valueWithType = parts[0].trim();
-        let dataType = parts[1]?.trim();
-        if (!valueWithType) {
-            throw new Error(`Line '${line}' does not contain a value`);
+        // Check if the line starts a new section
+        if (trimmedLine.startsWith("[")) {
+            // Extract the section name and size limit
+            const sectionParts = trimmedLine
+                .slice(1, -1)
+                .split("(")
+                .map((part) => part.trim());
+            const sectionName = sectionParts[0];
+            const sectionSizeLimit = sectionParts[1]
+                ? parseInt(sectionParts[1].slice(0, -1))
+                : null;
+            // Update the current section and size limit
+            currentSection = sectionName;
+            currentSectionSizeLimit = sectionSizeLimit;
+            // Initialize the section in the variables object
+            variables[sectionName] = {};
+            continue;
         }
-        if (!AFMLDataType[dataType]) {
-            throw new Error(`Line '${line}' contains an invalid data type: ${dataType}`);
-        }
-        let valueAndKey = valueWithType.split(':');
-        let key = valueAndKey[0].trim();
-        let value = valueAndKey[1].trim();
-        if (dataType === AFMLDataType.Secret) {
-            if (!options.allowSecret) {
-                console.log(`Secret variable detected: ${key}`);
-                value = "****";
+        // Check if the line defines a variable
+        if (currentSection) {
+            // Check if the size limit of the current section has been reached
+            if (currentSectionSizeLimit &&
+                Object.keys(variables[currentSection]).length >= currentSectionSizeLimit) {
+                throw new Error(`[AFML] :: Section :"${currentSection}" went above set limit: ${currentSectionSizeLimit}`);
             }
+            // Extract the variable and its value
+            const parts = trimmedLine.split(":").map((part) => part.trim());
+            const variable = parts[0];
+            const value = parts[1].split(" *")[0].trim();
+            const type = parts[1].split(" *")[1]
+                ? parts[1].split(" *")[1].trim()
+                : AFMLTypes.String;
+            // Parse the value based on its type
+            let parsedValue;
+            if (options.allowSecret || type !== AFMLTypes.Secret) {
+                parsedValue = parseValues(value, type);
+            }
+            else {
+                parsedValue = "*".repeat(value.length);
+            }
+            // Assign the parsed value to the variable in the current section
+            variables[currentSection][variable] = parsedValue;
         }
-        else {
-            if (dataType === AFMLDataType.String) {
-                let matchString = value.match(/^"(.*)"$/);
-                if (matchString) {
-                    value = matchString[1];
-                }
-                else {
-                    throw new Error(`Line '${line}' does not contain a valid string value`);
-                }
-            }
-            else if (dataType === AFMLDataType.Boolean) {
-                if (value === 'true' || value === 'false') {
-                    value = value === 'true';
-                }
-                else {
-                    throw new Error(`Line '${line}' does not contain a valid boolean value`);
-                }
-            }
-            else if (dataType === AFMLDataType.Number) {
-                if (!isNaN(value)) {
-                    value = Number(value);
-                }
-                else {
-                    throw new Error(`Line '${line}' does not contain a valid number value`);
-                }
-            }
-        }
-        config[currentSection][key] = value;
-    });
-    return config;
-}
-exports.parseAFML = parseAFML;
+    }
+    return variables;
+};
+console.log(parseAFML("./config.afml"));
