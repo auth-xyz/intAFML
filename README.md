@@ -34,11 +34,15 @@ console.log(config);
 ```yaml
 # config.afml
 
-[login]
-username: "Auth" ; String
-password: "1234" ; Secret
-age: 19 ; Number
-cool: true
+[login] #Unlimited assets inside a section
+username: "Auth" *String
+password: "1234" *Secret
+age: 19  *Number
+cool: true *Boolean
+
+[app (2)] #Limited amount of assets inside a section, if any more assets are added it'll throw an error
+test: "something" *String
+test2: "Something2" *String 
 ```
 
 
