@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseAFML = void 0;
 // Import necessary modules
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -122,4 +123,4 @@ const parseAFML = (filePath, basePath = process.cwd(), options = { allowSecret: 
     }
     return variables;
 };
-console.log(parseAFML("./config.afml"));
+exports.parseAFML = parseAFML;
