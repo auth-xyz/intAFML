@@ -1,6 +1,7 @@
 // Import necessary modules
 import fs from "fs";
 import path from "path";
+import { register } from 'tsconfig-paths'
 
 // Define the supported types in AFML
 enum AFMLTypes {
@@ -36,6 +37,11 @@ const parseAFML = (
   filePath: string,
   options: { allowSecret: boolean } = { allowSecret: false }
 ) => {
+  register({
+    baseUrl: process.cwd(),
+    paths: require(path.resolve(__dirname, `${process.cwd()}/tsconfig.json`)).compilerOptions.paths,
+  });
+
   // Read the content of the file
   const fileContent = fs.readFileSync(filePath, "utf-8");
 
