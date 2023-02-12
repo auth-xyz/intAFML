@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import necessary modules
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 // Define the supported types in AFML
 var AFMLTypes;
 (function (AFMLTypes) {
@@ -33,7 +34,31 @@ const parseValues = (value, type, allowSecret = true) => {
             throw new Error(`[AFML] :: Unsupported type annotation: ${type}`);
     }
 };
-const parseAFML = (filePath, options = { allowSecret: false }) => {
+const resolvePath = (filePath, baseDir) => {
+    // Check if the path starts with a custom alias
+    if (filePath.startsWith("@")) {
+        // Split the alias and the rest of the path
+        const parts = filePath.split("/");
+        const alias = parts.shift();
+        const aliasPath = parts.join("/");
+        // Read the tsconfig.json file
+        const tsconfig = JSON.parse(fs_1.default.readFileSync(path_1.default.join(baseDir, "tsconfig.json"), "utf-8"));
+        // Check if the alias is defined in the paths property
+        if (tsconfig.compilerOptions && tsconfig.compilerOptions.paths) {
+            const aliasBase = tsconfig.compilerOptions.paths[alias][0];
+            // Resolve the full path for the file
+            return path_1.default.resolve(baseDir, aliasBase, aliasPath);
+        }
+        else {
+            throw new Error(`[AFML] :: Alias "${alias}" not defined in tsconfig.json`);
+        }
+    }
+    // Return the original path if it doesn't start with a custom alias
+    return path_1.default.resolve(baseDir, filePath);
+};
+const parseAFML = (filePath, basePath = process.cwd(), options = { allowSecret: false }) => {
+    // Resolve the path for the file
+    const resolvedPath = resolvePath(filePath, basePath);
     // Read the content of the file
     const fileContent = fs_1.default.readFileSync(filePath, "utf-8");
     // Split the content by line
