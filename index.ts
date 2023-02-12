@@ -150,4 +150,7 @@ const parseAFML = (
   return variables;
 };
 
-console.log(parseAFML("./config.afml"));
+
+export {
+  parseAFML
+}
