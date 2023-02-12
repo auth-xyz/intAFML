@@ -1,5 +1,6 @@
 // Import necessary modules
 import fs from "fs";
+import path from "path";
 
 // Define the supported types in AFML
 enum AFMLTypes {
@@ -30,10 +31,44 @@ const parseValues = (value: string, type: any, allowSecret = true): any => {
   }
 };
 
+const resolvePath = (filePath: string, baseDir: string) => {
+  // Check if the path starts with a custom alias
+  if (filePath.startsWith("@")) {
+    // Split the alias and the rest of the path
+    const parts = filePath.split("/");
+    const alias = parts.shift();
+    const aliasPath = parts.join("/");
+
+    // Read the tsconfig.json file
+    const tsconfig = JSON.parse(
+      fs.readFileSync(path.join(baseDir, "tsconfig.json"), "utf-8")
+    );
+
+    // Check if the alias is defined in the paths property
+    if (tsconfig.compilerOptions && tsconfig.compilerOptions.paths) {
+      const aliasBase = tsconfig.compilerOptions.paths[alias][0];
+
+      // Resolve the full path for the file
+      return path.resolve(baseDir, aliasBase, aliasPath);
+    } else {
+      throw new Error(
+        `[AFML] :: Alias "${alias}" not defined in tsconfig.json`
+      );
+    }
+  }
+
+  // Return the original path if it doesn't start with a custom alias
+  return path.resolve(baseDir, filePath);
+};
+
 const parseAFML = (
   filePath: string,
+  basePath = process.cwd(),
   options: { allowSecret: boolean } = { allowSecret: false }
 ) => {
+  // Resolve the path for the file
+  const resolvedPath = resolvePath(filePath, basePath);
+
   // Read the content of the file
   const fileContent = fs.readFileSync(filePath, "utf-8");
 
