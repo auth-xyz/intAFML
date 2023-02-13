@@ -1,107 +1,87 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseAFML = void 0;
-// Import necessary modules
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const tsconfig_paths_1 = require("tsconfig-paths");
-// Define the supported types in AFML
-var AFMLTypes;
-(function (AFMLTypes) {
-    AFMLTypes["String"] = "String";
-    AFMLTypes["Secret"] = "Secret";
-    AFMLTypes["Number"] = "Number";
-    AFMLTypes["Boolean"] = "Boolean";
-    AFMLTypes["JSON"] = "JSON";
-    AFMLTypes["Array"] = "Array";
-})(AFMLTypes || (AFMLTypes = {}));
-const parseValues = (value, type, allowSecret = true) => {
-    switch (type) {
-        case AFMLTypes.String:
-            return value;
-        case AFMLTypes.Secret:
-            return allowSecret ? value : "*".repeat(value.length);
-        case AFMLTypes.Number:
-            return parseFloat(value);
-        case AFMLTypes.Boolean:
-            return value === "true";
-        case AFMLTypes.JSON:
-            return JSON.parse(value);
-        case AFMLTypes.Array:
-            return value.split(",").map((item) => item.trim());
-        default:
-            throw new Error(`[AFML] :: Unsupported type annotation: ${type}`);
-    }
-};
-const parseAFML = (filePath, options = { allowSecret: false }) => {
-    (0, tsconfig_paths_1.register)({
-        baseUrl: process.cwd(),
-        paths: require(path_1.default.resolve(__dirname, `${process.cwd()}/tsconfig.json`)).compilerOptions.paths,
-    });
-    // Read the content of the file
-    const fileContent = fs_1.default.readFileSync(filePath, "utf-8");
-    // Split the content by line
-    const lines = fileContent.split("\n");
-    // Keep track of the current section and its size limit
-    let currentSection = null;
-    let currentSectionSizeLimit = null;
-    // Store the variables and their values
-    const variables = {};
-    // Parse each line
-    for (const line of lines) {
-        // Trim the line and remove any comments
-        const trimmedLine = line.trim().split("#")[0];
-        // Skip empty lines
-        if (!trimmedLine) {
-            continue;
-        }
-        // Check if the line starts a new section
-        if (trimmedLine.startsWith("[")) {
-            // Extract the section name and size limit
-            const sectionParts = trimmedLine
-                .slice(1, -1)
-                .split("(")
-                .map((part) => part.trim());
-            const sectionName = sectionParts[0];
-            const sectionSizeLimit = sectionParts[1]
-                ? parseInt(sectionParts[1].slice(0, -1))
-                : null;
-            // Update the current section and size limit
-            currentSection = sectionName;
-            currentSectionSizeLimit = sectionSizeLimit;
-            // Initialize the section in the variables object
-            variables[sectionName] = {};
-            continue;
-        }
-        // Check if the line defines a variable
-        if (currentSection) {
-            // Check if the size limit of the current section has been reached
-            if (currentSectionSizeLimit &&
-                Object.keys(variables[currentSection]).length >= currentSectionSizeLimit) {
-                throw new Error(`[AFML] :: Section :"${currentSection}" went above set limit: ${currentSectionSizeLimit}`);
-            }
-            // Extract the variable and its value
-            const parts = trimmedLine.split(":").map((part) => part.trim());
-            const variable = parts[0];
-            const value = parts[1].split(" *")[0].trim();
-            const type = parts[1].split(" *")[1]
-                ? parts[1].split(" *")[1].trim()
-                : AFMLTypes.String;
-            // Parse the value based on its type
-            let parsedValue;
-            if (options.allowSecret || type !== AFMLTypes.Secret) {
-                parsedValue = parseValues(value, type);
-            }
-            else {
-                parsedValue = "*".repeat(value.length);
-            }
-            // Assign the parsed value to the variable in the current section
-            variables[currentSection][variable] = parsedValue;
+exports.ConfigParser = void 0;
+const fs = __importStar(require("fs"));
+const variableTypes = [
+    { type: "String", parse: (value) => value },
+    { type: "Number", parse: (value) => parseInt(value, 10) },
+    { type: "Boolean", parse: (value) => value === "true" },
+    { type: "Secret", parse: (value) => "***" },
+    { type: "Null", parse: (value) => null },
+];
+class ConfigParser {
+    config = {};
+    variables = [];
+    settings = { allowSecret: false };
+    constructor(settings) {
+        if (settings) {
+            this.settings = settings;
         }
     }
-    return variables;
-};
-exports.parseAFML = parseAFML;
+    parse(data) {
+        const lines = data.split("\n");
+        let currentSection = "";
+        const sectionRegex = /\[([^\]]+)\]/;
+        for (const line of lines) {
+            const sectionMatch = line.match(sectionRegex);
+            if (sectionMatch) {
+                currentSection = sectionMatch[1].trim();
+                this.config[currentSection] = {};
+                continue;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            const parts = line.split(" : ");
+            if (parts.length !== 2) {
+                continue;
+            }
+            const name = parts[0].trim();
+            const rawValue = parts[1].split(" *")[0].trim().replace(/^"(.*)"$/, "$1");
+            const type = parts[1].split(" *")[1].trim();
+            const variableType = variableTypes.find((t) => t.type.toLowerCase() === type);
+            if (!variableType) {
+                continue;
+            }
+            let value = variableType.parse(rawValue);
+            if (type === "Secret" && !this.settings.allowSecret) {
+                value = "*".repeat(value.length);
+            }
+            this.variables.push({
+                name,
+                value,
+                type: variableType.type,
+            });
+            this.config[currentSection][name] = value;
+        }
+        return this.config;
+    }
+    parseFile(filePath) {
+        const data = fs.readFileSync(filePath, "utf-8");
+        return this.parse(data);
+    }
+}
+exports.ConfigParser = ConfigParser;

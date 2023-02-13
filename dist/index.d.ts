@@ -1,6 +1,14 @@
-declare const parseAFML: (filePath: string, options?: {
-    allowSecret: boolean;
-}) => {
+interface Config {
     [key: string]: any;
-};
-export { parseAFML };
+}
+declare class ConfigParser {
+    private config;
+    private variables;
+    private settings;
+    constructor(settings?: {
+        allowSecret: boolean;
+    });
+    parse(data: string): Config;
+    parseFile(filePath: string): Config;
+}
+export { ConfigParser };
