@@ -13,14 +13,18 @@ interface Variable {
 
 interface VariableType {
   type: string;
-  parse: (value: string) => any;
+  parse: (value: string, allowSecret?: boolean) => any;
 }
 
 const variableTypes: VariableType[] = [
   { type: "String", parse: (value) => value },
   { type: "Number", parse: (value) => parseInt(value, 10) },
   { type: "Boolean", parse: (value) => value === "true" },
-  { type: "Secret", parse: (value) => "***" },
+  {
+    type: "Secret",
+    parse: (value: string, allowSecret: boolean) =>
+      allowSecret ? value : "*".repeat(value.length),
+  },
   { type: "Null", parse: (value) => null },
 ];
 
@@ -58,10 +62,15 @@ class ConfigParser {
       }
 
       const name = parts[0].trim();
-      const rawValue = parts[1].split(" *")[0].trim().replace(/^"(.*)"$/, "$1");
+      const rawValue = parts[1]
+        .split(" *")[0]
+        .trim()
+        .replace(/^"(.*)"$/, "$1");
       const type = parts[1].split(" *")[1].trim();
 
-      const variableType = variableTypes.find((t) => t.type.toLowerCase() === type);
+      const variableType = variableTypes.find(
+        (t) => t.type.toLowerCase() === type
+      );
       if (!variableType) {
         continue;
       }
@@ -87,6 +96,4 @@ class ConfigParser {
     return this.parse(data);
   }
 }
-export {
-    ConfigParser
-};
+export { ConfigParser };
