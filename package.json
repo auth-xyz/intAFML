@@ -6,7 +6,7 @@
     "typescript-collections": "^1.3.3"
   },
   "name": "afml",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "intAFML TypeScript interpreter for AFML (Another Fucking Markup Language) is a powerful tool that allows you to add type information to your configuration files. With the ability to specify types such as String, Number, Boolean, and Secret, you can ensure that your configuration files are more secure and easier to maintain. When a string is given the Secret type, its output will be hidden, providing an extra layer of security for sensitive information in your configuration files. With TypeScript as the underlying language, the interpreter provides strong typing and error-checking, making it easier to catch mistakes before they cause problems in your application.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

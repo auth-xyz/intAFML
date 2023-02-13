@@ -31,7 +31,7 @@ const variableTypes = [
     { type: "Boolean", parse: (value) => value === "true" },
     {
         type: "Secret",
-        parse: (value, allowSecret) => allowSecret ? value : "*".repeat(value.length),
+        parse: (value, allowSecret = false) => allowSecret ? value : "*".repeat(value.length),
     },
     { type: "Null", parse: (value) => null },
 ];
@@ -72,10 +72,7 @@ class ConfigParser {
             if (!variableType) {
                 continue;
             }
-            let value = variableType.parse(rawValue);
-            if (type === "Secret" && !this.settings.allowSecret) {
-                value = "*".repeat(value.length);
-            }
+            const value = variableType.parse(rawValue, this.settings.allowSecret);
             this.variables.push({
                 name,
                 value,
