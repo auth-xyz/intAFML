@@ -21,10 +21,11 @@ The main export of intAFML is a function called `parseAFML`, which accepts two a
 - `allowSecret` (default: `false`): a boolean value indicating whether values given the type Secret should be revealed in the output
 
 ```typescript
-import { parseAFML } from "afml";
+import { ConfigParser } from "afml";
+const afml = new ConfigParser();
 
-const config = parseAFML("path/to/config.afml");
-console.log(config);
+afml.parseFile("/path/to/afml");
+
 ```
 
 ##### Examples:
@@ -35,14 +36,14 @@ console.log(config);
 # config.afml
 
 [login] #Unlimited assets inside a section
-username: "Auth" *String
-password: "1234" *Secret
-age: 19  *Number
-cool: true *Boolean
+username : "Auth" *string
+password : "1234" *secret
+age : 19  *number
+cool: true *boolean
 
 [app (2)] #Limited amount of assets inside a section, if any more assets are added it'll throw an error
-test: "something" *String
-test2: "Something2" *String 
+test : "something" *string
+test2 : "Something2" *string 
 ```
 
 
@@ -50,7 +51,7 @@ Parsing this file with allowSecret set to false (the default value) would result
 
 
 ```json
-"login": { "username": "Auth", "password": "*****", "age": 19, "cool": true }
+login: { "username": "Auth", "password": "*****", "age": 19, "cool": true }
 
 ```
 
@@ -58,7 +59,7 @@ Setting allowSecret to true would reveal the secret value:
 
 
 ```json
-"login": { "username": "Auth", "password": "1234" "age": 19, "cool": true }
+login: { "username": "Auth", "password": "1234" "age": 19, "cool": true }
 ```
 
 #### Contributing
