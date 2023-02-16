@@ -26,22 +26,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AFML = void 0;
 const fs = __importStar(require("fs"));
 const variableTypes = [
-    { type: "String", parse: (value) => value },
-    { type: "Number", parse: (value) => parseInt(value, 10) },
-    { type: "Boolean", parse: (value) => value === "true" },
+    { type: "string", parse: (value) => value },
+    { type: "number", parse: (value) => parseInt(value, 10) },
+    { type: "boolean", parse: (value) => value === "true" },
     {
-        type: "Secret",
+        type: "secret",
         parse: (value, allowSecret = false) => allowSecret ? value : "*".repeat(value.length),
     },
-    { type: "Null", parse: (value) => null },
+    { type: "null", parse: (value) => null },
 ];
 class AFML {
     config = {};
     variables = [];
-    settings = { allowSecret: false };
+    settings = {
+        allowLog: false,
+        allowSecret: false,
+    };
     constructor(settings) {
         if (settings) {
-            this.settings = settings;
+            this.settings = { ...this.settings, ...settings };
         }
     }
     parse(data) {
@@ -80,11 +83,32 @@ class AFML {
             });
             this.config[currentSection][name] = value;
         }
+        for (const sectionName in this.config) {
+            const section = this.config[sectionName];
+            if (sectionName.endsWith(" :: (")) {
+                const limitStart = sectionName.lastIndexOf("(");
+                const limitEnd = sectionName.lastIndexOf(")");
+                if (limitStart !== -1 && limitEnd !== -1 && limitEnd > limitStart) {
+                    const limit = parseInt(sectionName.slice(limitStart + 1, limitEnd), 10);
+                    const content = Object.assign({}, section);
+                    delete content[`:: (${limit})`];
+                    this.config[sectionName.slice(0, limitStart - 1)] = {
+                        limit,
+                        content,
+                    };
+                    delete this.config[sectionName];
+                }
+            }
+        }
         return this.config;
     }
     parseFile(filePath) {
         const data = fs.readFileSync(filePath, "utf-8");
-        return this.parse(data);
+        const config = this.parse(data);
+        if (this.config.allowLog) {
+            console.log(config);
+        }
+        return config;
     }
 }
 exports.AFML = AFML;

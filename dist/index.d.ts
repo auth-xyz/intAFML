@@ -6,7 +6,8 @@ declare class AFML {
     private variables;
     private settings;
     constructor(settings?: {
-        allowSecret: boolean;
+        allowLog?: boolean;
+        allowSecret?: boolean;
     });
     private parse;
     parseFile(filePath: string): Config;
