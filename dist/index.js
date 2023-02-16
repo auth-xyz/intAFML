@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConfigParser = void 0;
+exports.AFML = void 0;
 const fs = __importStar(require("fs"));
 const variableTypes = [
     { type: "String", parse: (value) => value },
@@ -35,7 +35,7 @@ const variableTypes = [
     },
     { type: "Null", parse: (value) => null },
 ];
-class ConfigParser {
+class AFML {
     config = {};
     variables = [];
     settings = { allowSecret: false };
@@ -47,7 +47,7 @@ class ConfigParser {
     parse(data) {
         const lines = data.split("\n");
         let currentSection = "";
-        const sectionRegex = /\[([^\]]+)\]/;
+        const sectionRegex = new RegExp(/\[([^\]]+)\]/);
         for (const line of lines) {
             const sectionMatch = line.match(sectionRegex);
             if (sectionMatch) {
@@ -87,4 +87,4 @@ class ConfigParser {
         return this.parse(data);
     }
 }
-exports.ConfigParser = ConfigParser;
+exports.AFML = AFML;

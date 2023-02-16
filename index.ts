@@ -1,6 +1,4 @@
 import * as fs from "fs";
-import * as tsconfigPaths from "tsconfig-paths/register";
-
 interface Config {
   [key: string]: any;
 }
@@ -28,7 +26,7 @@ const variableTypes: VariableType[] = [
   { type: "Null", parse: (value) => null },
 ];
 
-class ConfigParser {
+class AFML {
   private config: Config = {};
   private variables: Variable[] = [];
   private settings: { allowSecret: boolean } = { allowSecret: false };
@@ -39,11 +37,11 @@ class ConfigParser {
     }
   }
 
-  parse(data: string): Config {
+  private parse(data: string): Config {
     const lines = data.split("\n");
     let currentSection = "";
 
-    const sectionRegex = /\[([^\]]+)\]/;
+    const sectionRegex = new RegExp(/\[([^\]]+)\]/);
     for (const line of lines) {
       const sectionMatch = line.match(sectionRegex);
       if (sectionMatch) {
@@ -88,12 +86,12 @@ class ConfigParser {
     return this.config;
   }
 
-  parseFile(filePath: string): Config {
+  public parseFile(filePath: string): Config {
     const data = fs.readFileSync(filePath, "utf-8");
     return this.parse(data);
   }
 }
 
 export {
-  ConfigParser
+  AFML
 }

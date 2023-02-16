@@ -1,14 +1,14 @@
 interface Config {
     [key: string]: any;
 }
-declare class ConfigParser {
+declare class AFML {
     private config;
     private variables;
     private settings;
     constructor(settings?: {
         allowSecret: boolean;
     });
-    parse(data: string): Config;
+    private parse;
     parseFile(filePath: string): Config;
 }
-export { ConfigParser };
+export { AFML };
