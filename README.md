@@ -21,7 +21,7 @@ The main export of this repository is a class named "AFML", it recieves one prop
 
 ```typescript
 import { AFML } from "afml";
-const afml = new ConfigParser();
+const afml = new AFML({ allowSecret: false });
 
 afml.parseFile("/path/to/afml");
 
