@@ -15,13 +15,12 @@ npm install afml@latest
 ```
 
 ## Usage
-The main export of intAFML is a function called `parseAFML`, which accepts two arguments:
-- `path`: a string representing the path of the AFML configuration file
-- `options`: an options object with the following properties:
-- `allowSecret` (default: `false`): a boolean value indicating whether values given the type Secret should be revealed in the output
+The main export of this repository is a class named "AFML", it recieves one property and a function called parseFile, which recieves a single property
+- `path` : An relative path from the current file to where the configuration file is.
+- `allowSecret` : This is a property not for parseFile but for the class itself, if set to "true" all variables with the *secret type will have its value revelead on output, the default is false.
 
 ```typescript
-import { ConfigParser } from "afml";
+import { AFML } from "afml";
 const afml = new ConfigParser();
 
 afml.parseFile("/path/to/afml");
