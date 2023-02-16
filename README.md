@@ -50,7 +50,7 @@ test2 : "Something2" *string
 Parsing this file with allowSecret set to false (the default value) would result in the following output:
 
 
-```json
+```ts
 login: { "username": "Auth", "password": "*****", "age": 19, "cool": true }
 
 ```
@@ -58,7 +58,7 @@ login: { "username": "Auth", "password": "*****", "age": 19, "cool": true }
 Setting allowSecret to true would reveal the secret value:
 
 
-```json
+```ts
 login: { "username": "Auth", "password": "1234" "age": 19, "cool": true }
 ```
 
